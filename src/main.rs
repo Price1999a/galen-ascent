@@ -184,12 +184,12 @@ fn main() {
 
     println!("initial: ");
     let start = Instant::now();
-    program.p.extend(vec_p_first_owned);
-    program.q.extend(vec_q_first_owned);
-    program.r.extend(vec_r_first_owned);
-    program.c.extend(vec_c_first_owned);
-    program.u.extend(vec_u_first_owned);
-    program.s.extend(vec_s_first_owned);
+    program.p.extend(vec_p_first_owned.clone());
+    program.q.extend(vec_q_first_owned.clone());
+    program.r.extend(vec_r_first_owned.clone());
+    program.c.extend(vec_c_first_owned.clone());
+    program.u.extend(vec_u_first_owned.clone());
+    program.s.extend(vec_s_first_owned.clone());
     program.run();
     let duration = start.elapsed();
     println!("方法运行时间: {:?}", duration);
@@ -197,12 +197,12 @@ fn main() {
 
     println!("inc 1");
     let start = Instant::now();
-    program_inc1.p = program.p;
-    program_inc1.q = program.q;
-    program_inc1.r = program.r;
-    program_inc1.c = program.c;
-    program_inc1.u = program.u;
-    program_inc1.s = program.s;
+    program_inc1.p.extend(vec_p_first_owned.clone());
+    program_inc1.q.extend(vec_q_first_owned.clone());
+    program_inc1.r.extend(vec_r_first_owned.clone());
+    program_inc1.c.extend(vec_c_first_owned.clone());
+    program_inc1.u.extend(vec_u_first_owned.clone());
+    program_inc1.s.extend(vec_s_first_owned.clone());
     program_inc1.p.extend(vec_p_last_owned);
     program_inc1.run();
     let duration = start.elapsed();
@@ -210,12 +210,12 @@ fn main() {
 
     println!("inc 2");
     let start = Instant::now();
-    program_inc2.p = program_inc1.p;
-    program_inc2.q = program_inc1.q;
-    program_inc2.r = program_inc1.r;
-    program_inc2.c = program_inc1.c;
-    program_inc2.u = program_inc1.u;
-    program_inc2.s = program_inc1.s;
+    program_inc2.p.extend(vec_p_first_owned.clone());
+    program_inc2.q.extend(vec_q_first_owned.clone());
+    program_inc2.r.extend(vec_r_first_owned.clone());
+    program_inc2.c.extend(vec_c_first_owned.clone());
+    program_inc2.u.extend(vec_u_first_owned.clone());
+    program_inc2.s.extend(vec_s_first_owned.clone());
     program_inc2.q.extend(vec_q_last_owned);
     program_inc2.run();
     let duration = start.elapsed();
@@ -223,12 +223,12 @@ fn main() {
 
     println!("inc 3");
     let start = Instant::now();
-    program_inc3.p = program_inc2.p;
-    program_inc3.q = program_inc2.q;
-    program_inc3.r = program_inc2.r;
-    program_inc3.c = program_inc2.c;
-    program_inc3.u = program_inc2.u;
-    program_inc3.s = program_inc2.s;
+    program_inc3.p.extend(vec_p_first_owned.clone());
+    program_inc3.q.extend(vec_q_first_owned.clone());
+    program_inc3.r.extend(vec_r_first_owned.clone());
+    program_inc3.c.extend(vec_c_first_owned.clone());
+    program_inc3.u.extend(vec_u_first_owned.clone());
+    program_inc3.s.extend(vec_s_first_owned.clone());
     program_inc3.r.extend(vec_r_last_owned);
     program_inc3.run();
     let duration = start.elapsed();
@@ -236,12 +236,12 @@ fn main() {
 
     println!("inc 4");
     let start = Instant::now();
-    program_inc4.p = program_inc3.p;
-    program_inc4.q = program_inc3.q;
-    program_inc4.r = program_inc3.r;
-    program_inc4.c = program_inc3.c;
-    program_inc4.u = program_inc3.u;
-    program_inc4.s = program_inc3.s;
+    program_inc4.p.extend(vec_p_first_owned.clone());
+    program_inc4.q.extend(vec_q_first_owned.clone());
+    program_inc4.r.extend(vec_r_first_owned.clone());
+    program_inc4.c.extend(vec_c_first_owned.clone());
+    program_inc4.u.extend(vec_u_first_owned.clone());
+    program_inc4.s.extend(vec_s_first_owned.clone());
     program_inc4.c.extend(vec_c_last_owned);
     program_inc4.run();
     let duration = start.elapsed();
@@ -249,12 +249,12 @@ fn main() {
 
     println!("inc 5");
     let start = Instant::now();
-    program_inc5.p = program_inc4.p;
-    program_inc5.q = program_inc4.q;
-    program_inc5.r = program_inc4.r;
-    program_inc5.c = program_inc4.c;
-    program_inc5.u = program_inc4.u;
-    program_inc5.s = program_inc4.s;
+    program_inc5.p.extend(vec_p_first_owned.clone());
+    program_inc5.q.extend(vec_q_first_owned.clone());
+    program_inc5.r.extend(vec_r_first_owned.clone());
+    program_inc5.c.extend(vec_c_first_owned.clone());
+    program_inc5.u.extend(vec_u_first_owned.clone());
+    program_inc5.s.extend(vec_s_first_owned.clone());
     program_inc5.u.extend(vec_u_last_owned);
     program_inc5.run();
     let duration = start.elapsed();
@@ -262,12 +262,12 @@ fn main() {
 
     println!("inc 6");
     let start = Instant::now();
-    program_inc6.p = program_inc5.p;
-    program_inc6.q = program_inc5.q;
-    program_inc6.r = program_inc5.r;
-    program_inc6.c = program_inc5.c;
-    program_inc6.u = program_inc5.u;
-    program_inc6.s = program_inc5.s;
+    program_inc6.p.extend(vec_p_first_owned.clone());
+    program_inc6.q.extend(vec_q_first_owned.clone());
+    program_inc6.r.extend(vec_r_first_owned.clone());
+    program_inc6.c.extend(vec_c_first_owned.clone());
+    program_inc6.u.extend(vec_u_first_owned.clone());
+    program_inc6.s.extend(vec_s_first_owned.clone());
     program_inc6.s.extend(vec_s_last_owned);
     program_inc6.run();
     let duration = start.elapsed();
