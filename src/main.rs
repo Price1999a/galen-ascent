@@ -137,22 +137,21 @@ fn main() {
     let mut program_inc5 = AscentProgram::default();
     let mut program_inc6 = AscentProgram::default();
 
-    let vec_p = read_file_to_vec_2("./data/input-1000/p.txt");
-    let vec_q = read_file_to_vec_3("./data/input-1000/q.txt");
-    let vec_r = read_file_to_vec_3("./data/input-1000/r.txt");
-    let vec_c = read_file_to_vec_3("./data/input-1000/c.txt");
-    let vec_u = read_file_to_vec_3("./data/input-1000/u.txt");
-    let vec_s = read_file_to_vec_2("./data/input-1000/s.txt");
+    // let vec_p = read_file_to_vec_2("./data/input-1000/p.txt");
+    // let vec_q = read_file_to_vec_3("./data/input-1000/q.txt");
+    // let vec_r = read_file_to_vec_3("./data/input-1000/r.txt");
+    // let vec_c = read_file_to_vec_3("./data/input-1000/c.txt");
+    // let vec_u = read_file_to_vec_3("./data/input-1000/u.txt");
+    // let vec_s = read_file_to_vec_2("./data/input-1000/s.txt");
 
-    // let vec_p = read_file_from_zip_to_vec_2("./data/input.zip", "input/p.txt");
-    // let vec_q = read_file_from_zip_to_vec_3("./data/input.zip", "input/q.txt");
-    // let vec_r = read_file_from_zip_to_vec_3("./data/input.zip", "input/r.txt");
-    // let vec_c = read_file_from_zip_to_vec_3("./data/input.zip", "input/c.txt");
-    // let vec_u = read_file_from_zip_to_vec_3("./data/input.zip", "input/u.txt");
-    // let vec_s = read_file_from_zip_to_vec_2("./data/input.zip", "input/s.txt");
-    // prog.edge = vec![(1, 2), (2, 3)];
-    // prog.run();
-    // println!("path: {:?}", prog.path);
+    let vec_p = read_file_from_zip_to_vec_2("./data/input.zip", "input/p.txt");
+    let vec_q = read_file_from_zip_to_vec_3("./data/input.zip", "input/q.txt");
+    let vec_r = read_file_from_zip_to_vec_3("./data/input.zip", "input/r.txt");
+    let vec_c = read_file_from_zip_to_vec_3("./data/input.zip", "input/c.txt");
+    let vec_u = read_file_from_zip_to_vec_3("./data/input.zip", "input/u.txt");
+    let vec_s = read_file_from_zip_to_vec_2("./data/input.zip", "input/s.txt");
+
+
     println!("file read info:");
     println!("p{}", vec_p.len());
     println!("q{}", vec_q.len());
