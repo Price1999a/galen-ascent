@@ -161,12 +161,12 @@ fn main() {
     println!("s{}", vec_s.len());
     println!();
 
-    let (vec_p_first, _) = vec_p.clone().split_at(vec_p.len() - 10);
-    let (vec_q_first, _) = vec_q.clone().split_at(vec_q.len() - 10);
-    let (vec_r_first, _) = vec_r.clone().split_at(vec_r.len() - 10);
-    let (vec_c_first, _) = vec_c.clone().split_at(vec_c.len() - 10);
-    let (vec_u_first, _) = vec_u.clone().split_at(vec_u.len() - 10);
-    let (vec_s_first, _) = vec_s.clone().split_at(vec_s.len() - 10);
+    let (vec_p_first, _vec_p_last) = vec_p.split_at(vec_p.len() - 10);
+    let (vec_q_first, _vec_q_last) = vec_q.split_at(vec_q.len() - 10);
+    let (vec_r_first, _vec_r_last) = vec_r.split_at(vec_r.len() - 10);
+    let (vec_c_first, _vec_c_last) = vec_c.split_at(vec_c.len() - 10);
+    let (vec_u_first, _vec_u_last) = vec_u.split_at(vec_u.len() - 10);
+    let (vec_s_first, _vec_s_last) = vec_s.split_at(vec_s.len() - 10);
 
     let vec_p_first_owned = vec_p_first.to_vec();
     let vec_q_first_owned = vec_q_first.to_vec();
