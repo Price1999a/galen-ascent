@@ -5,6 +5,8 @@ use std::time::Instant;
 use ascent::ascent_par;
 use ascent::rayon::ThreadPoolBuilder;
 use zip::ZipArchive;
+mod utils;
+
 ascent_par! {
     relation p(i32, i32);
     relation q(i32, i32, i32);
@@ -21,107 +23,7 @@ ascent_par! {
     q(x, e, o) < - - q(x, y, z), r(y, u, e), q(z, u, o);
 }
 
-fn read_file_to_vec_3(file_path: &str) -> Vec<(i32, i32, i32)> {
-    let file = File::open(file_path).expect("Failed to open file");
-    let reader = BufReader::new(file);
 
-    let mut vec = Vec::new();
-
-    for line in reader.lines() {
-        if let Ok(line) = line {
-            let values: Vec<&str> = line.split(',').collect();
-            if values.len() == 3 {
-                if let (Ok(val1), Ok(val2), Ok(val3)) = (
-                    i32::from_str(values[0]),
-                    i32::from_str(values[1]),
-                    i32::from_str(values[2]),
-                ) {
-                    vec.push((val1, val2, val3));
-                }
-            }
-        }
-    }
-
-    vec
-}
-
-fn read_file_to_vec_2(file_path: &str) -> Vec<(i32, i32)> {
-    let file = File::open(file_path).expect("Failed to open file");
-    let reader = BufReader::new(file);
-
-    let mut vec = Vec::new();
-
-    for line in reader.lines() {
-        if let Ok(line) = line {
-            let values: Vec<&str> = line.split(',').collect();
-            if values.len() == 2 {
-                if let (Ok(val1), Ok(val2)) = (
-                    i32::from_str(values[0]),
-                    i32::from_str(values[1]),
-                ) {
-                    vec.push((val1, val2));
-                }
-            }
-        }
-    }
-
-    vec
-}
-
-fn read_file_from_zip_to_vec_3(zip_path: &str, file_path: &str) -> Vec<(i32, i32, i32)> {
-    let file = File::open(zip_path).expect("Failed to open ZIP file");
-    let mut archive = ZipArchive::new(file).expect("Failed to create ZIP archive");
-
-    let mut vec = Vec::new();
-
-    if let Ok(zip_file) = archive.by_name(file_path) {
-        let reader = BufReader::new(zip_file);
-
-        for line in reader.lines() {
-            if let Ok(line) = line {
-                let values: Vec<&str> = line.split(',').collect();
-                if values.len() == 3 {
-                    if let (Ok(val1), Ok(val2), Ok(val3)) = (
-                        i32::from_str(values[0]),
-                        i32::from_str(values[1]),
-                        i32::from_str(values[2]),
-                    ) {
-                        vec.push((val1, val2, val3));
-                    }
-                }
-            }
-        }
-    }
-
-    vec
-}
-
-fn read_file_from_zip_to_vec_2(zip_path: &str, file_path: &str) -> Vec<(i32, i32)> {
-    let file = File::open(zip_path).expect("Failed to open ZIP file");
-    let mut archive = ZipArchive::new(file).expect("Failed to create ZIP archive");
-
-    let mut vec = Vec::new();
-
-    if let Ok(zip_file) = archive.by_name(file_path) {
-        let reader = BufReader::new(zip_file);
-
-        for line in reader.lines() {
-            if let Ok(line) = line {
-                let values: Vec<&str> = line.split(',').collect();
-                if values.len() == 2 {
-                    if let (Ok(val1), Ok(val2)) = (
-                        i32::from_str(values[0]),
-                        i32::from_str(values[1]),
-                    ) {
-                        vec.push((val1, val2));
-                    }
-                }
-            }
-        }
-    }
-
-    vec
-}
 
 fn main() {
     let _pool = ThreadPoolBuilder::new()
@@ -137,19 +39,19 @@ fn main() {
     let mut program_inc5 = AscentProgram::default();
     let mut program_inc6 = AscentProgram::default();
 
-    // let vec_p = read_file_to_vec_2("./data/input-1000/p.txt");
-    // let vec_q = read_file_to_vec_3("./data/input-1000/q.txt");
-    // let vec_r = read_file_to_vec_3("./data/input-1000/r.txt");
-    // let vec_c = read_file_to_vec_3("./data/input-1000/c.txt");
-    // let vec_u = read_file_to_vec_3("./data/input-1000/u.txt");
-    // let vec_s = read_file_to_vec_2("./data/input-1000/s.txt");
+    // let vec_p = utils::utils::read_file_to_vec_2("./data/input-1000/p.txt");
+    // let vec_q = utils::utils::read_file_to_vec_3("./data/input-1000/q.txt");
+    // let vec_r = utils::utils::read_file_to_vec_3("./data/input-1000/r.txt");
+    // let vec_c = utils::utils::read_file_to_vec_3("./data/input-1000/c.txt");
+    // let vec_u = utils::utils::read_file_to_vec_3("./data/input-1000/u.txt");
+    // let vec_s = utils::utils::read_file_to_vec_2("./data/input-1000/s.txt");
 
-    let vec_p = read_file_from_zip_to_vec_2("./data/input.zip", "input/p.txt");
-    let vec_q = read_file_from_zip_to_vec_3("./data/input.zip", "input/q.txt");
-    let vec_r = read_file_from_zip_to_vec_3("./data/input.zip", "input/r.txt");
-    let vec_c = read_file_from_zip_to_vec_3("./data/input.zip", "input/c.txt");
-    let vec_u = read_file_from_zip_to_vec_3("./data/input.zip", "input/u.txt");
-    let vec_s = read_file_from_zip_to_vec_2("./data/input.zip", "input/s.txt");
+    let vec_p = utils::utils::read_file_from_zip_to_vec_2("./data/input.zip", "input/p.txt");
+    let vec_q = utils::utils::read_file_from_zip_to_vec_3("./data/input.zip", "input/q.txt");
+    let vec_r = utils::utils::read_file_from_zip_to_vec_3("./data/input.zip", "input/r.txt");
+    let vec_c = utils::utils::read_file_from_zip_to_vec_3("./data/input.zip", "input/c.txt");
+    let vec_u = utils::utils::read_file_from_zip_to_vec_3("./data/input.zip", "input/u.txt");
+    let vec_s = utils::utils::read_file_from_zip_to_vec_2("./data/input.zip", "input/s.txt");
 
 
     println!("file read info:");
