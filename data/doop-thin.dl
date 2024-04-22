@@ -13,6 +13,7 @@
 .decl isInterfaceType(?t:InterfaceType)
 .decl DirectSuperclass(?class:ClassType, ?superclass:ClassType)
 .input DirectSuperclass(IO="file", filename="DirectSuperclass.facts", delimiter="\t")
+
 .decl DirectSuperinterface(?ref:ReferenceType, ?interface:InterfaceType)
 .input DirectSuperinterface(IO="file", filename="DirectSuperinterface.facts", delimiter="\t")
 .decl ApplicationClass(?ref:ReferenceType)
@@ -29,6 +30,7 @@
 .decl Method_Descriptor(?method:Method, ?descriptor:MethodDescriptor)
 .decl Method_Modifier(?mod:Modifier, ?method:Method)
 .input Method_Modifier(IO="file", filename="Method-Modifier.facts", delimiter="\t")
+
 .decl FormalParam(?index:number, ?method:Method, ?var:Var)
 .input FormalParam(IO="file", filename="FormalParam.facts", delimiter="\t")
 .decl ThisVar(?method:Method, ?var:Var)

@@ -5,6 +5,7 @@ use std::time::Instant;
 use ascent::ascent_par;
 use ascent::rayon::ThreadPoolBuilder;
 use zip::ZipArchive;
+
 mod utils;
 
 ascent_par! {
