@@ -7,6 +7,7 @@
 .decl isInterfaceType(?t:InterfaceType)
 .decl DirectSuperclass(?class:ClassType, ?superclass:ClassType)
 
+
 结果：
 
 relation isType(String);
@@ -16,22 +17,34 @@ relation isClassType(String);
 relation isInterfaceType(String);
 relation DirectSuperclass(String, String);
 
+规则的例子：
+isType(?class),
+isReferenceType(?class),
+isClassType(?class) :-
+  _ClassType(?class).
+结果：
+isType(class) <--
+  _ClassType(class);
+isReferenceType(class) <--
+_ClassType(class);
+isClassType(class) <--
+  _ClassType(class);
+
 你需要处理的：
-【注意你只需要处理.decl 其他你无需处理】
-.decl DirectSuperinterface(?ref:ReferenceType, ?interface:InterfaceType)
-.input DirectSuperinterface(IO="file", filename="DirectSuperinterface.facts", delimiter="\t")
-.decl ApplicationClass(?ref:ReferenceType)
-.decl MainClass(?class:ClassType)
-.input MainClass(IO="file", filename="MainClass.facts", delimiter="\t")
-.type Field
-.decl Field_DeclaringType(?field:Field, ?declaringClass:ReferenceType)
-.type MethodDescriptor
-.type Method
-.decl Method_DeclaringType(?method:Method, ?declaringType:ReferenceType)
-.decl Method_ReturnType(?method:Method, ?returnType:Type)
-.decl Method_SimpleName(?method:Method, ?simpleName:symbol)
-.decl Method_Params(?method:Method, ?params:symbol)
-.decl Method_Descriptor(?method:Method, ?descriptor:MethodDescriptor)
-.decl Method_Modifier(?mod:Modifier, ?method:Method)
-.input Method_Modifier(IO="file", filename="Method-Modifier.facts", delimiter="\t")
+【你无需处理input 并且只需要处理规则片段中有的内容】
+
+.decl _ClassType(?class:symbol)
+.input _ClassType(IO="file", filename="ClassType.facts", delimiter="\t")
+isType(?class),
+isReferenceType(?class),
+isClassType(?class) :-
+  _ClassType(?class).
+
+.decl _ArrayType(?arrayType:symbol)
+.input _ArrayType(IO="file", filename="ArrayType.facts", delimiter="\t")
+isType(?arrayType),
+isReferenceType(?arrayType),
+isArrayType(?arrayType) :-
+  _ArrayType(?arrayType).
+
 

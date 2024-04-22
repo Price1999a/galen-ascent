@@ -44,6 +44,7 @@
 .decl MainMethodArgArrayContent(?heap:HeapAllocation)
 .type Instruction
 .decl Instruction_Method(?insn:Instruction, ?inMethod:Method)
+
 .type FieldInstruction = Instruction
 .type LoadInstanceField_Insn = FieldInstruction
 .type StoreInstanceField_Insn = FieldInstruction
@@ -61,6 +62,7 @@
 .type MethodInvocation = Instruction
 .type VirtualMethodInvocation_Insn = MethodInvocation
 .type StaticMethodInvocation_Insn = MethodInvocation
+
 .decl isVirtualMethodInvocation_Insn(?insn:VirtualMethodInvocation_Insn)
 .decl isStaticMethodInvocation_Insn(?insn:StaticMethodInvocation_Insn)
 .decl FieldInstruction_Signature(?insn:FieldInstruction, ?sign:Field)
@@ -70,6 +72,7 @@
 .decl StoreInstanceField_Base(?insn:StoreInstanceField_Insn, ?var:Var)
 .decl LoadStaticField_To(?insn:LoadStaticField_Insn, ?var:Var)
 .decl StoreStaticField_From(?insn:StoreStaticField_Insn, ?var:Var)
+
 .decl ComponentType(?arrayType:ArrayType, ?componentType:Type)
 .input ComponentType(IO="file", filename="ComponentType.facts", delimiter="\t")
 .decl LoadArrayIndex_Base(?insn:LoadArrayIndex_Insn, ?var:Var)
@@ -79,6 +82,7 @@
 .decl AssignInstruction_To(?insn:AssignInstruction, ?to:Var)
 .decl AssignCast_From(?insn:AssignCast_Insn, ?from:Var)
 .decl AssignCast_Type(?insn:AssignCast_Insn, ?type:Type)
+
 .decl AssignLocal_From(?insn:AssignLocal_Insn, ?from:Var)
 .decl AssignHeapAllocation_Heap(?insn:AssignHeapAllocation_Insn, ?heap:HeapAllocation)
 .decl ReturnNonvoid_Var(?return:ReturnNonvoid_Insn, ?var:Var)
@@ -119,6 +123,7 @@ isType(?arrayType),
 isReferenceType(?arrayType),
 isArrayType(?arrayType) :-
   _ArrayType(?arrayType).
+
 .decl _InterfaceType(?interface:symbol)
 .input _InterfaceType(IO="file", filename="InterfaceType.facts", delimiter="\t")
 isType(?interface),
@@ -135,6 +140,7 @@ isType(?type),
 isReferenceType(?type),
 ApplicationClass(?type) :-
   _ApplicationClass(?type).
+
 .decl _ThisVar(?method:symbol, ?var:symbol)
 .input _ThisVar(IO="file", filename="ThisVar.facts", delimiter="\t")
 ThisVar(?method, ?var) :-
