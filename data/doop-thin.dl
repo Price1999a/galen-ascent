@@ -154,6 +154,7 @@ HeapAllocation_Type(?id, ?type) :-
 .input _StringConstant(IO="file", filename="StringConstant.facts", delimiter="\t")
 HeapAllocation_Type(?id, "java.lang.String") :-
   _StringConstant(?id).
+
 .decl _AssignHeapAllocation(?instruction:symbol, ?index:number, ?heap:symbol, ?to:symbol, ?inmethod:symbol, ?linenumber:number)
 .input _AssignHeapAllocation(IO="file", filename="AssignHeapAllocation.facts", delimiter="\t")
 Instruction_Method(?instruction, ?method),
@@ -166,6 +167,7 @@ Instruction_Method(?instruction, ?method),
 AssignLocal_From(?instruction, ?from),
 AssignInstruction_To(?instruction, ?to) :-
   _AssignLocal(?instruction, ?index, ?from, ?to, ?method).
+
 .decl _AssignCast(?instruction:symbol, ?index:number, ?from:symbol, ?to:symbol, ?type:symbol, ?inmethod:symbol)
 .input _AssignCast(IO="file", filename="AssignCast.facts", delimiter="\t")
 Instruction_Method(?instruction, ?method),
@@ -180,6 +182,7 @@ Field_DeclaringType(?signature, ?declaringType) :-
 MethodInvocation_Base(?invocation, ?base) :-
   VirtualMethodInvocation_Base(?invocation, ?base) ;
   SpecialMethodInvocation_Base(?invocation, ?base).
+
 .decl _StaticMethodInvocation(?instruction:symbol, ?index:number, ?signature:symbol, ?method:symbol)
 .input _StaticMethodInvocation(IO="file", filename="StaticMethodInvocation.facts", delimiter="\t")
 Instruction_Method(?instruction, ?method),
@@ -210,6 +213,8 @@ Method_Descriptor(?method, ?descriptor) :-
   Method_ReturnType(?method, ?returnType),
   Method_Params(?method, ?params),
   ?descriptor = cat(?returnType, ?params).
+  #[NOTE]! ?descriptor = cat(?returnType, cat("(", cat(?params, ")"))).#
+
 .decl _StoreInstanceField(?instruction:symbol, ?index:number, ?from:symbol, ?base:symbol, ?signature:symbol, ?method:symbol)
 .input _StoreInstanceField(IO="file", filename="StoreInstanceField.facts", delimiter="\t")
 Instruction_Method(?instruction, ?method),
@@ -230,6 +235,7 @@ Instruction_Method(?instruction, ?method),
 FieldInstruction_Signature(?instruction, ?signature),
 StoreStaticField_From(?instruction, ?from) :-
   _StoreStaticField(?instruction, ?index, ?from, ?signature, ?method).
+
 .decl _LoadStaticField(?instruction:symbol, ?index:number, ?to:symbol, ?signature:symbol, ?method:symbol)
 .input _LoadStaticField(IO="file", filename="LoadStaticField.facts", delimiter="\t")
 Instruction_Method(?instruction, ?method),

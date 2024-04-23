@@ -1,5 +1,5 @@
 帮我翻译如下Souffle规则到Ascent规则：
-我会给你简单的例子
+我会给你简单的例子，首先是decl怎么处理：
 .decl isType(?t:Type)
 .decl isReferenceType(?t:ReferenceType)
 .decl isArrayType(?t:ArrayType)
@@ -17,34 +17,40 @@ relation isClassType(String);
 relation isInterfaceType(String);
 relation DirectSuperclass(String, String);
 
-规则的例子：
-isType(?class),
-isReferenceType(?class),
-isClassType(?class) :-
-  _ClassType(?class).
+之后则是规则的例子：
+isType(?type),
+HeapAllocation_Type(?id, ?type) :-
+  _NormalHeap(?id, ?type).
+HeapAllocation_Type(?id, "java.lang.String") :-
+  _StringConstant(?id).
 结果：
-isType(class) <--
-  _ClassType(class);
-isReferenceType(class) <--
-_ClassType(class);
-isClassType(class) <--
-  _ClassType(class);
+isType(_type),
+HeapAllocation_Type(id, _type) <--
+  _NormalHeap(id, _type);
+// 这里type是保留字 需要加_
+HeapAllocation_Type(id, "java.lang.String".parse().unwrap()) <--
+  _StringConstant(id);
+// 这里ascent需要.parse().unwrap()来处理String
 
 你需要处理的：
-【你无需处理input 并且只需要处理规则片段中有的内容】
-
-.decl _ClassType(?class:symbol)
-.input _ClassType(IO="file", filename="ClassType.facts", delimiter="\t")
-isType(?class),
-isReferenceType(?class),
-isClassType(?class) :-
-  _ClassType(?class).
-
-.decl _ArrayType(?arrayType:symbol)
-.input _ArrayType(IO="file", filename="ArrayType.facts", delimiter="\t")
-isType(?arrayType),
-isReferenceType(?arrayType),
-isArrayType(?arrayType) :-
-  _ArrayType(?arrayType).
-
-
+【你无需处理input 并且只需要处理规则片段中decl以及规则部分】
+.decl _StoreInstanceField(?instruction:symbol, ?index:number, ?from:symbol, ?base:symbol, ?signature:symbol, ?method:symbol)
+.input _StoreInstanceField(IO="file", filename="StoreInstanceField.facts", delimiter="\t")
+Instruction_Method(?instruction, ?method),
+FieldInstruction_Signature(?instruction, ?signature),
+StoreInstanceField_Base(?instruction, ?base),
+StoreInstanceField_From(?instruction, ?from) :-
+  _StoreInstanceField(?instruction, ?index, ?from, ?base, ?signature, ?method).
+.decl _LoadInstanceField(?instruction:symbol, ?index:number, ?to:symbol, ?base:symbol, ?signature:symbol, ?method:symbol)
+.input _LoadInstanceField(IO="file", filename="LoadInstanceField.facts", delimiter="\t")
+Instruction_Method(?instruction, ?method),
+FieldInstruction_Signature(?instruction, ?signature),
+LoadInstanceField_Base(?instruction, ?base),
+LoadInstanceField_To(?instruction, ?to) :-
+  _LoadInstanceField(?instruction, ?index, ?to, ?base, ?signature, ?method).
+.decl _StoreStaticField(?instruction:symbol, ?index:number, ?from:symbol, ?signature:symbol, ?method:symbol)
+.input _StoreStaticField(IO="file", filename="StoreStaticField.facts", delimiter="\t")
+Instruction_Method(?instruction, ?method),
+FieldInstruction_Signature(?instruction, ?signature),
+StoreStaticField_From(?instruction, ?from) :-
+  _StoreStaticField(?instruction, ?index, ?from, ?signature, ?method).

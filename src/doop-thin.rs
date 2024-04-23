@@ -6,7 +6,7 @@ use zip::read::ZipFile;
 
 mod utils;
 
-pub type Str = &'static str;
+// pub type Str = &'static str;
 
 ascent_par! {
     relation isType(String);
@@ -86,10 +86,168 @@ ascent_par! {
     isType(arrayType) <-- _ArrayType(arrayType);
     isReferenceType(arrayType) <-- _ArrayType(arrayType);
     isArrayType(arrayType) <-- _ArrayType(arrayType);
+
+    relation _InterfaceType(String);
+    isType(interface) <--
+      _InterfaceType(interface);
+    isReferenceType(interface) <--
+      _InterfaceType(interface);
+    isInterfaceType(interface) <--
+      _InterfaceType(interface);
+    relation _Var_DeclaringMethod(String, String);
+    Var_DeclaringMethod(var, method) <--
+      _Var_DeclaringMethod(var, method);
+    relation _ApplicationClass(String);
+    isType(_type) <--
+      _ApplicationClass(_type);
+    isReferenceType(_type) <--
+      _ApplicationClass(_type);
+    ApplicationClass(_type) <--
+      _ApplicationClass(_type);
+    relation _ThisVar(String, String);
+    relation _NormalHeap(String, String);
+    relation _StringConstant(String);
+    _ThisVar(method, var) <--
+      _ThisVar(method, var);
+    isType(_type),
+    HeapAllocation_Type(id, _type) <--
+      _NormalHeap(id, _type);
+    HeapAllocation_Type(id, "java.lang.String".parse().unwrap()) <--
+      _StringConstant(id);
+    relation _AssignHeapAllocation(String, String, String, String, String, String);
+    relation _AssignLocal(String, String, String, String, String);
+    Instruction_Method(_instruction, _method),
+    AssignInstruction_To(_instruction, _to),
+    AssignHeapAllocation_Heap(_instruction, _heap) <--
+      _AssignHeapAllocation(_instruction, _index, _heap, _to, _method, _linenumber);
+    Instruction_Method(_instruction, _method),
+    AssignLocal_From(_instruction, _from),
+    AssignInstruction_To(_instruction, _to) <--
+      _AssignLocal(_instruction, _index, _from, _to, _method);
+
+    relation _AssignCast(String, String, String, String, String, String);
+    relation _Field(String, String, String, String);
+    Instruction_Method(instruction, method),
+    AssignCast_Type(instruction, _type),
+    AssignCast_From(instruction, _from),
+    AssignInstruction_To(instruction, _to) <--
+      _AssignCast(instruction, _index, _from, _to, _type, method);
+    Field_DeclaringType(signature, declaringType) <--
+      _Field(signature, declaringType, _, _);
+    MethodInvocation_Base(invocation, base) <--
+      VirtualMethodInvocation_Base(invocation, base);
+    MethodInvocation_Base(invocation, base) <--
+      SpecialMethodInvocation_Base(invocation, base);
+
+    relation _StaticMethodInvocation(String, String, String, String);
+    relation _SpecialMethodInvocation(String, String, String, String, String);
+    relation _VirtualMethodInvocation(String, String, String, String, String);
+    relation _Method(String, String, String, String, String, String, String);
+    Instruction_Method(instruction, method),
+    isStaticMethodInvocation_Insn(instruction),
+    MethodInvocation_Method(instruction, signature) <--
+      _StaticMethodInvocation(instruction, index, signature, method);
+    Instruction_Method(instruction, method),
+    SpecialMethodInvocation_Base(instruction, base),
+    MethodInvocation_Method(instruction, signature) <--
+      _SpecialMethodInvocation(instruction, index, signature, base, method);
+    Instruction_Method(instruction, method),
+    isVirtualMethodInvocation_Insn(instruction),
+    VirtualMethodInvocation_Base(instruction, base),
+    MethodInvocation_Method(instruction, signature) <--
+      _VirtualMethodInvocation(instruction, index, signature, base, method);
+    Method_SimpleName(method, simplename),
+    Method_Params(method, params),
+    Method_DeclaringType(method, declaringType),
+    Method_ReturnType(method, returnType) <--
+      _Method(method, simplename, params, declaringType, returnType, jvmDescriptor, arity);
+    Method_Descriptor(method, descriptor) <--
+      Method_ReturnType(method, returnType),
+      Method_Params(method, params),
+      let descriptor = format!("{}({})", returnType, params) ; // assuming 'cat' is concatenation of strings
+
 }
 
 
 fn input_process(prog: &mut AscentProgram, zip_file_name: &String) {
+
+    // .input _Method(IO="file", filename="Method.facts", delimiter="\t")
+    let tmp = utils::utils::
+    read_file_from_zip_to_vec_doop_thin(zip_file_name, "database/Method.facts")
+        .into_iter().map(|mut v| {
+        (v.remove(0), v.remove(0), v.remove(0), v.remove(0), v.remove(0), v.remove(0), v.remove(0))  // 直接移除并返回向量的前两个元素
+    });
+    prog._Method.extend(tmp);
+    // .input _VirtualMethodInvocation(IO="file", filename="VirtualMethodInvocation.facts", delimiter="\t")
+    let tmp = utils::utils::
+    read_file_from_zip_to_vec_doop_thin(zip_file_name, "database/VirtualMethodInvocation.facts")
+        .into_iter().map(|mut v| {
+        (v.remove(0), v.remove(0), v.remove(0), v.remove(0), v.remove(0))  // 直接移除并返回向量的前两个元素
+    });
+    prog._VirtualMethodInvocation.extend(tmp);
+    // .input _SpecialMethodInvocation(IO="file", filename="SpecialMethodInvocation.facts", delimiter="\t")
+    let tmp = utils::utils::
+    read_file_from_zip_to_vec_doop_thin(zip_file_name, "database/SpecialMethodInvocation.facts")
+        .into_iter().map(|mut v| {
+        (v.remove(0), v.remove(0), v.remove(0), v.remove(0), v.remove(0))  // 直接移除并返回向量的前两个元素
+    });
+    prog._SpecialMethodInvocation.extend(tmp);
+    // .input _StaticMethodInvocation(IO="file", filename="StaticMethodInvocation.facts", delimiter="\t")
+    let tmp = utils::utils::
+    read_file_from_zip_to_vec_doop_thin(zip_file_name, "database/StaticMethodInvocation.facts")
+        .into_iter().map(|mut v| {
+        (v.remove(0), v.remove(0), v.remove(0), v.remove(0))  // 直接移除并返回向量的前两个元素
+    });
+    prog._StaticMethodInvocation.extend(tmp);
+    // .input _Field(IO="file", filename="Field.facts", delimiter="\t")
+    let tmp = utils::utils::
+    read_file_from_zip_to_vec_doop_thin(zip_file_name, "database/Field.facts")
+        .into_iter().map(|mut v| {
+        (v.remove(0), v.remove(0), v.remove(0), v.remove(0))  // 直接移除并返回向量的前两个元素
+    });
+    prog._Field.extend(tmp);
+    // .input _AssignCast(IO="file", filename="AssignCast.facts", delimiter="\t")
+    let tmp = utils::utils::
+    read_file_from_zip_to_vec_doop_thin(zip_file_name, "database/AssignCast.facts")
+        .into_iter().map(|mut v| {
+        (v.remove(0), v.remove(0), v.remove(0), v.remove(0), v.remove(0), v.remove(0))  // 直接移除并返回向量的前两个元素
+    });
+    prog._AssignCast.extend(tmp);
+    // .input _AssignLocal(IO="file", filename="AssignLocal.facts", delimiter="\t")
+    let tmp = utils::utils::
+    read_file_from_zip_to_vec_doop_thin(zip_file_name, "database/AssignLocal.facts")
+        .into_iter().map(|mut v| {
+        (v.remove(0), v.remove(0), v.remove(0), v.remove(0), v.remove(0))  // 直接移除并返回向量的前两个元素
+    });
+    prog._AssignLocal.extend(tmp);
+    // .input _AssignHeapAllocation(IO="file", filename="AssignHeapAllocation.facts", delimiter="\t")
+    let tmp = utils::utils::
+    read_file_from_zip_to_vec_doop_thin(zip_file_name, "database/AssignHeapAllocation.facts")
+        .into_iter().map(|mut v| {
+        (v.remove(0), v.remove(0), v.remove(0), v.remove(0), v.remove(0), v.remove(0))  // 直接移除并返回向量的前两个元素
+    });
+    prog._AssignHeapAllocation.extend(tmp);
+    // .input _StringConstant(IO="file", filename="StringConstant.facts", delimiter="\t")
+    let tmp = utils::utils::
+    read_file_from_zip_to_vec_doop_thin(zip_file_name, "database/StringConstant.facts")
+        .into_iter().map(|mut v| {
+        (v.remove(0), )  // 直接移除并返回向量的前两个元素
+    });
+    prog._StringConstant.extend(tmp);
+    // .input _NormalHeap(IO="file", filename="NormalHeap.facts", delimiter="\t")
+    let tmp = utils::utils::
+    read_file_from_zip_to_vec_doop_thin(zip_file_name, "database/NormalHeap.facts")
+        .into_iter().map(|mut v| {
+        (v.remove(0), v.remove(0))  // 直接移除并返回向量的前两个元素
+    });
+    prog._NormalHeap.extend(tmp);
+    // .input _ThisVar(IO="file", filename="ThisVar.facts", delimiter="\t")
+    let tmp = utils::utils::
+    read_file_from_zip_to_vec_doop_thin(zip_file_name, "database/ThisVar.facts")
+        .into_iter().map(|mut v| {
+        (v.remove(0), v.remove(0))  // 直接移除并返回向量的前两个元素
+    });
+    prog._ThisVar.extend(tmp);
     //.input DirectSuperclass(IO="file", filename="DirectSuperclass.facts", delimiter="\t")
     let tmp = utils::utils::
     read_file_from_zip_to_vec_doop_thin(zip_file_name, "database/DirectSuperclass.facts")
@@ -167,6 +325,27 @@ fn input_process(prog: &mut AscentProgram, zip_file_name: &String) {
         (v.remove(0), )  // 直接移除并返回向量的前两个元素
     });
     prog._ArrayType.extend(tmp);
+    // .input _InterfaceType(IO="file", filename="InterfaceType.facts", delimiter="\t")
+    let tmp = utils::utils::
+    read_file_from_zip_to_vec_doop_thin(zip_file_name, "database/InterfaceType.facts")
+        .into_iter().map(|mut v| {
+        (v.remove(0), )  // 直接移除并返回向量的前两个元素
+    });
+    prog._InterfaceType.extend(tmp);
+    // .input _Var_DeclaringMethod(IO="file", filename="Var-DeclaringMethod.facts", delimiter="\t")
+    let tmp = utils::utils::
+    read_file_from_zip_to_vec_doop_thin(zip_file_name, "database/Var-DeclaringMethod.facts")
+        .into_iter().map(|mut v| {
+        (v.remove(0), v.remove(0))  // 直接移除并返回向量的前两个元素
+    });
+    prog._Var_DeclaringMethod.extend(tmp);
+    // .input _ApplicationClass(IO="file", filename="ApplicationClass.facts", delimiter="\t")
+    let tmp = utils::utils::
+    read_file_from_zip_to_vec_doop_thin(zip_file_name, "database/ApplicationClass.facts")
+        .into_iter().map(|mut v| {
+        (v.remove(0), )  // 直接移除并返回向量的前两个元素
+    });
+    prog._ApplicationClass.extend(tmp);
 }
 
 fn main() {
@@ -193,8 +372,13 @@ fn main() {
     prog.run();
     let duration = start.elapsed();
     println!("方法运行时间: {:?}", duration);
-    // println!("{}",prog.isArrayType.len())
-    // for (i, j) in prog.p {
-    //     println!("{}, {}", i, j);
+    println!("{}", prog.Method_Descriptor.len());
+
+    // let mut count = 0;  // 定义一个计数器
+    // for (i, j) in prog.Method_Descriptor {
+    //     if count % 1000 == 0 {  // 检查计数器是否是1000的倍数
+    //         println!("{}，间隔， {}", i, j);
+    //     }
+    //     count += 1;  // 每次循环，计数器增加1
     // }
 }
