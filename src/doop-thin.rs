@@ -164,13 +164,405 @@ ascent_par! {
     Method_Descriptor(method, descriptor) <--
       Method_ReturnType(method, returnType),
       Method_Params(method, params),
-      let descriptor = format!("{}({})", returnType, params) ; // assuming 'cat' is concatenation of strings
+      let descriptor = format!("{}({})", returnType, params); // 'cat' is concatenation of strings
+
+    relation _StoreInstanceField(String, String, String, String, String, String);
+    relation _LoadInstanceField(String, String, String, String, String, String);
+    relation _StoreStaticField(String, String, String, String, String);
+    Instruction_Method(instruction, method),
+    FieldInstruction_Signature(instruction, signature),
+    StoreInstanceField_Base(instruction, base),
+    StoreInstanceField_From(instruction, from) <--
+        _StoreInstanceField(instruction, index, from, base, signature, method);
+    Instruction_Method(instruction, method),
+    FieldInstruction_Signature(instruction, signature),
+    LoadInstanceField_Base(instruction, base),
+    LoadInstanceField_To(instruction, to) <--
+        _LoadInstanceField(instruction, index, to, base, signature, method);
+    Instruction_Method(instruction, method),
+    FieldInstruction_Signature(instruction, signature),
+    StoreStaticField_From(instruction, from) <--
+        _StoreStaticField(instruction, index, from, signature, method);
+
+    relation _LoadStaticField(String, String, String, String, String);
+    relation _StoreArrayIndex(String, String, String, String, String);
+    relation _LoadArrayIndex(String, String, String, String, String);
+    relation _Return(String, String, String, String);
+    Instruction_Method(instruction, method),
+    FieldInstruction_Signature(instruction, signature),
+    LoadStaticField_To(instruction, to) <--
+      _LoadStaticField(instruction, index, to, signature, method);
+    Instruction_Method(instruction, method),
+    StoreArrayIndex_Base(instruction, base),
+    StoreArrayIndex_From(instruction, from) <--
+      _StoreArrayIndex(instruction, index, from, base, method);
+    Instruction_Method(instruction, method),
+    LoadArrayIndex_Base(instruction, base),
+    LoadArrayIndex_To(instruction, to) <--
+      _LoadArrayIndex(instruction, index, to, base, method);
+    Instruction_Method(instruction, method),
+    ReturnNonvoid_Var(instruction, var) <--
+      _Return(instruction, index, var, method);
+
+    // fat schema population
+    LoadInstanceField(base, sig, to, inmethod) <--
+      Instruction_Method(insn, inmethod),
+      LoadInstanceField_Base(insn, base),
+      FieldInstruction_Signature(insn, sig),
+      LoadInstanceField_To(insn, to);
+    StoreInstanceField(from, base, sig, inmethod) <--
+      Instruction_Method(insn, inmethod),
+      StoreInstanceField_From(insn, from),
+      StoreInstanceField_Base(insn, base),
+      FieldInstruction_Signature(insn, sig);
+    LoadStaticField(sig, to, inmethod) <--
+      Instruction_Method(insn, inmethod),
+      FieldInstruction_Signature(insn, sig),
+      LoadStaticField_To(insn, to);
+    StoreStaticField(from, sig, inmethod) <--
+      Instruction_Method(insn, inmethod),
+      StoreStaticField_From(insn, from),
+      FieldInstruction_Signature(insn, sig);
+    LoadArrayIndex(base, to, inmethod) <--
+      Instruction_Method(insn, inmethod),
+      LoadArrayIndex_Base(insn, base),
+      LoadArrayIndex_To(insn, to);
+    StoreArrayIndex(from, base, inmethod) <--
+      Instruction_Method(insn, inmethod),
+      StoreArrayIndex_From(insn, from),
+      StoreArrayIndex_Base(insn, base);
+    AssignCast(_type, from, to, inmethod) <--
+      Instruction_Method(insn, inmethod),
+      AssignCast_From(insn, from),
+      AssignInstruction_To(insn, to),
+      AssignCast_Type(insn, _type);
+    AssignLocal(from, to, inmethod) <--
+      AssignInstruction_To(insn, to),
+      Instruction_Method(insn, inmethod),
+      AssignLocal_From(insn, from);
+    AssignHeapAllocation(heap, to, inmethod) <--
+      Instruction_Method(insn, inmethod),
+      AssignHeapAllocation_Heap(insn, heap),
+      AssignInstruction_To(insn, to);
+    ReturnVar(_var, _method) <--
+      Instruction_Method(_insn, _method),
+      ReturnNonvoid_Var(_insn, _var);
+
+    StaticMethodInvocation(invocation, signature, inmethod) <--
+      isStaticMethodInvocation_Insn(invocation),
+      Instruction_Method(invocation, inmethod),
+      MethodInvocation_Method(invocation, signature);
+    HeapAllocation_Type(heap, _type),
+    MainMethodArgArray(heap) <--
+      let heap = "<<main method array>>",
+      let _type = "java.lang.String[]";
+    HeapAllocation_Type(heap, _type),
+    MainMethodArgArrayContent(heap) <--
+      let heap = "<<main method array content>>",
+      let _type = "java.lang.String";
+    VirtualMethodInvocation_SimpleName(invocation, simplename),
+    VirtualMethodInvocation_Descriptor(invocation, descriptor) <--
+      isVirtualMethodInvocation_Insn(invocation),
+      MethodInvocation_Method(invocation, signature),
+      Method_SimpleName(signature, simplename),
+      Method_Descriptor(signature, descriptor);
+
+    // Basic (type-based) analysis
+    relation MethodLookup(String, String, String, String);
+    relation MethodImplemented(String, String, String, String);
+    relation DirectSubclass(String, String);
+    relation Subclass(String, String);
+    relation Superclass(String, String);
+    relation Superinterface(String, String);
+    relation SubtypeOf(String, String);
+    relation SupertypeOf(String, String);
+    relation SubtypeOfDifferent(String, String);
+    relation MainMethodDeclaration(String);
+    MethodLookup(simplename, descriptor, type_, method) <--
+      MethodImplemented(simplename, descriptor, type_, method);
+    MethodLookup(simplename, descriptor, type_, method) <--
+      (DirectSuperclass(type_, supertype) || DirectSuperinterface(type_, supertype)),
+      MethodLookup(simplename, descriptor, supertype, method),
+      !MethodImplemented(simplename, descriptor, type_, _);
+    MethodImplemented(simplename, descriptor, type_, method) <--
+      Method_SimpleName(method, simplename),
+      Method_Descriptor(method, descriptor),
+      Method_DeclaringType(method, type_),
+      !Method_Modifier("abstract".to_string(), method);
+    DirectSubclass(a, c) <--
+      DirectSuperclass(a, c);
+    Subclass(c, a) <--
+      DirectSubclass(a, c);
+    Subclass(c, a) <--
+      Subclass(b, a),
+      DirectSubclass(b, c);
+    Superclass(c, a) <--
+      Subclass(a, c);
+    Superinterface(k, c) <--
+      DirectSuperinterface(c, k);
+    Superinterface(k, c) <--
+      DirectSuperinterface(c, j),
+      Superinterface(k, j);
+    Superinterface(k, c) <--
+      DirectSuperclass(c, _super),
+      Superinterface(k, _super);
+
+    SupertypeOf(s, t) <--
+      SubtypeOf(t, s);
+    SubtypeOf(s, s) <--
+      isClassType(s);
+    SubtypeOf(s, t) <--
+      Subclass(t, s);
+    SubtypeOf(s, t) <--
+      isClassType(s),
+      Superinterface(t, s);
+    SubtypeOf(s, t) <--
+      isInterfaceType(s),
+      isType(t),
+      if t == "java.lang.Object";
+    SubtypeOf(s, s) <--
+      isInterfaceType(s);
+    SubtypeOf(s, t) <--
+      isInterfaceType(s),
+      Superinterface(t, s);
+    SubtypeOf(s, t) <--
+      isArrayType(s),
+      isType(t),
+      if t == "java.lang.Object";
+    SubtypeOf(s, t) <--
+      ComponentType(s, sc),
+      ComponentType(t, tc),
+      isReferenceType(sc),
+      isReferenceType(tc),
+      SubtypeOf(sc, tc);
+    //  不知道为什么 该规则会引入极长的耗时
+
+    SubtypeOf(s, t) <--
+      isArrayType(s),
+      isInterfaceType(t),
+      isType(t),
+      if t == "java.lang.Cloneable";
+    SubtypeOf(s, t) <--
+      isArrayType(s),
+      isInterfaceType(t),
+      isType(t),
+      if t == "java.io.Serializable";
+    SubtypeOf(t, t) <--
+      isType(t);
+    SubtypeOfDifferent(s, t) <--
+      SubtypeOf(s, t),
+      if s != t;
+
+    MainMethodDeclaration(method) <--
+      MainClass(_type),
+      Method_DeclaringType(method, _type),
+      if method != "<java.util.prefs.Base64: void main(java.lang.String[])>",
+      if method != "<sun.java2d.loops.GraphicsPrimitiveMgr: void main(java.lang.String[])>",
+      if method != "<sun.security.provider.PolicyParser: void main(java.lang.String[])>",
+      Method_SimpleName(method, "main".to_string()),
+      Method_Descriptor(method, "void(java.lang.String[])".to_string()),
+      Method_Modifier("public".to_string(), method),
+      Method_Modifier("static".to_string(), method);
+
+    // class initialization
+    relation ClassInitializer(String, String);
+    relation InitializedClass(String);
+    ClassInitializer(_type, method) <--
+      MethodImplemented("<clinit>".to_string(), "void()".to_string(), _type, method);
+    InitializedClass(superclass) <--
+      InitializedClass(_class),
+      DirectSuperclass(_class, superclass);
+    InitializedClass(superinterface) <--
+      InitializedClass(classOrInterface),
+      DirectSuperinterface(classOrInterface, superinterface);
+    InitializedClass(_class) <--
+      MainMethodDeclaration(method),
+      Method_DeclaringType(method, _class);
+    InitializedClass(_class) <--
+      Reachable(inmethod),
+      AssignHeapAllocation(heap, _, inmethod),
+      HeapAllocation_Type(heap, _class);
+
+    InitializedClass(class) <--
+      Reachable(inmethod),
+      Instruction_Method(invocation, inmethod),
+      isStaticMethodInvocation_Insn(invocation),
+      MethodInvocation_Method(invocation, signature),
+      Method_DeclaringType(signature, class);
+    InitializedClass(classOrInterface) <--
+      Reachable(inmethod),
+      StoreStaticField(_, signature, inmethod),
+      Field_DeclaringType(signature, classOrInterface);
+    InitializedClass(classOrInterface) <--
+      Reachable(inmethod),
+      LoadStaticField(signature, _, inmethod),
+      Field_DeclaringType(signature, classOrInterface);
+    Reachable(clinit) <--
+      InitializedClass(class),
+      ClassInitializer(class, clinit);
+
+    relation Assign(String, String);
+    relation VarPointsTo(String, String);
+    relation InstanceFieldPointsTo(String, String, String);
+    relation StaticFieldPointsTo(String, String);
+    relation CallGraphEdge(String, String);
+    relation ArrayIndexPointsTo(String, String);
+    relation Reachable(String);
+
+    Assign(actual, formal) <--
+      CallGraphEdge(invocation, method),
+      FormalParam(index, method, formal),
+      ActualParam(index, invocation, actual);
+    Assign(_return, local) <--
+      CallGraphEdge(invocation, method),
+      ReturnVar(_return, method),
+      AssignReturnValue(invocation, local);
+    VarPointsTo(heap, var) <--
+      AssignHeapAllocation(heap, var, inMethod),
+      Reachable(inMethod);
+    VarPointsTo(heap, to) <--
+      Assign(from, to),
+      VarPointsTo(heap, from);
+    VarPointsTo(heap, to) <--
+      Reachable(inmethod),
+      AssignLocal(from, to, inmethod),
+      VarPointsTo(heap, from);
+
+    VarPointsTo(heap, to) <--
+      Reachable(method),
+      AssignCast(_type, from, to, method),
+      SupertypeOf(_type, heaptype),
+      HeapAllocation_Type(heap, heaptype),
+      VarPointsTo(heap, from);
+    ArrayIndexPointsTo(baseheap, heap) <--
+      Reachable(inmethod),
+      StoreArrayIndex(from, base, inmethod),
+      VarPointsTo(baseheap, base),
+      VarPointsTo(heap, from),
+      HeapAllocation_Type(heap, heaptype),
+      HeapAllocation_Type(baseheap, baseheaptype),
+      ComponentType(baseheaptype, componenttype),
+      SupertypeOf(componenttype, heaptype);
+    VarPointsTo(heap, to) <--
+      Reachable(inmethod),
+      LoadArrayIndex(base, to, inmethod),
+      VarPointsTo(baseheap, base),
+      ArrayIndexPointsTo(baseheap, heap),
+      Var_Type(to, _type),
+      HeapAllocation_Type(baseheap, baseheaptype),
+      ComponentType(baseheaptype, basecomponenttype),
+      SupertypeOf(_type, basecomponenttype);
+
+    VarPointsTo(heap, to) <--
+      Reachable(inmethod),
+      LoadInstanceField(base, signature, to, inmethod),
+      VarPointsTo(baseheap, base),
+      InstanceFieldPointsTo(heap, signature, baseheap);
+    InstanceFieldPointsTo(heap, fld, baseheap) <--
+      Reachable(inmethod),
+      StoreInstanceField(from, base, fld, inmethod),
+      VarPointsTo(heap, from),
+      VarPointsTo(baseheap, base);
+    VarPointsTo(heap, to) <--
+      Reachable(inmethod),
+      LoadStaticField(fld, to, inmethod),
+      StaticFieldPointsTo(heap, fld);
+    StaticFieldPointsTo(heap, fld) <--
+      Reachable(inmethod),
+      StoreStaticField(from, fld, inmethod),
+      VarPointsTo(heap, from);
+
+    VarPointsTo(heap, this) <--
+      Reachable(inMethod),
+      Instruction_Method(invocation, inMethod),
+      VirtualMethodInvocation_Base(invocation, base),
+      VarPointsTo(heap, base),
+      HeapAllocation_Type(heap, heaptype),
+      VirtualMethodInvocation_SimpleName(invocation, simplename),
+      VirtualMethodInvocation_Descriptor(invocation, descriptor),
+      MethodLookup(simplename, descriptor, heaptype, toMethod),
+      ThisVar(toMethod, this);
+    Reachable(toMethod),
+    CallGraphEdge(invocation, toMethod) <--
+      Reachable(inMethod),
+      Instruction_Method(invocation, inMethod),
+      VirtualMethodInvocation_Base(invocation, base),
+      VarPointsTo(heap, base),
+      HeapAllocation_Type(heap, heaptype),
+      VirtualMethodInvocation_SimpleName(invocation, simplename),
+      VirtualMethodInvocation_Descriptor(invocation, descriptor),
+      MethodLookup(simplename, descriptor, heaptype, toMethod);
+
+    Reachable(toMethod),
+    CallGraphEdge(invocation, toMethod) <--
+      Reachable(inMethod),
+      StaticMethodInvocation(invocation, toMethod, inMethod);
+    Reachable(toMethod),
+    CallGraphEdge(invocation, toMethod),
+    VarPointsTo(heap, this) <--
+      Reachable(inMethod),
+      Instruction_Method(invocation, inMethod),
+      SpecialMethodInvocation_Base(invocation, base),
+      VarPointsTo(heap, base),
+      MethodInvocation_Method(invocation, toMethod),
+      ThisVar(toMethod, this);
+    Reachable(method) <--
+      MainMethodDeclaration(method);
 
 }
 
 
 fn input_process(prog: &mut AscentProgram, zip_file_name: &String) {
 
+    // .input _Return(IO="file", filename="Return.facts", delimiter="\t")
+    let tmp = utils::utils::
+    read_file_from_zip_to_vec_doop_thin(zip_file_name, "database/Return.facts")
+        .into_iter().map(|mut v| {
+        (v.remove(0), v.remove(0), v.remove(0), v.remove(0))  // 直接移除并返回向量的前两个元素
+    });
+    prog._Return.extend(tmp);
+    // .input _LoadArrayIndex(IO="file", filename="LoadArrayIndex.facts", delimiter="\t")
+    let tmp = utils::utils::
+    read_file_from_zip_to_vec_doop_thin(zip_file_name, "database/LoadArrayIndex.facts")
+        .into_iter().map(|mut v| {
+        (v.remove(0), v.remove(0), v.remove(0), v.remove(0), v.remove(0))  // 直接移除并返回向量的前两个元素
+    });
+    prog._LoadArrayIndex.extend(tmp);
+    // .input _StoreArrayIndex(IO="file", filename="StoreArrayIndex.facts", delimiter="\t")
+    let tmp = utils::utils::
+    read_file_from_zip_to_vec_doop_thin(zip_file_name, "database/StoreArrayIndex.facts")
+        .into_iter().map(|mut v| {
+        (v.remove(0), v.remove(0), v.remove(0), v.remove(0), v.remove(0))  // 直接移除并返回向量的前两个元素
+    });
+    prog._StoreArrayIndex.extend(tmp);
+    // .input _LoadStaticField(IO="file", filename="LoadStaticField.facts", delimiter="\t")
+    let tmp = utils::utils::
+    read_file_from_zip_to_vec_doop_thin(zip_file_name, "database/LoadStaticField.facts")
+        .into_iter().map(|mut v| {
+        (v.remove(0), v.remove(0), v.remove(0), v.remove(0), v.remove(0))  // 直接移除并返回向量的前两个元素
+    });
+    prog._LoadStaticField.extend(tmp);
+    // .input _StoreStaticField(IO="file", filename="StoreStaticField.facts", delimiter="\t")
+    let tmp = utils::utils::
+    read_file_from_zip_to_vec_doop_thin(zip_file_name, "database/StoreStaticField.facts")
+        .into_iter().map(|mut v| {
+        (v.remove(0), v.remove(0), v.remove(0), v.remove(0), v.remove(0))  // 直接移除并返回向量的前两个元素
+    });
+    prog._StoreStaticField.extend(tmp);
+    // .input _LoadInstanceField(IO="file", filename="LoadInstanceField.facts", delimiter="\t")
+    let tmp = utils::utils::
+    read_file_from_zip_to_vec_doop_thin(zip_file_name, "database/LoadInstanceField.facts")
+        .into_iter().map(|mut v| {
+        (v.remove(0), v.remove(0), v.remove(0), v.remove(0), v.remove(0), v.remove(0))  // 直接移除并返回向量的前两个元素
+    });
+    prog._LoadInstanceField.extend(tmp);
+    // .input _StoreInstanceField(IO="file", filename="StoreInstanceField.facts", delimiter="\t")
+    let tmp = utils::utils::
+    read_file_from_zip_to_vec_doop_thin(zip_file_name, "database/StoreInstanceField.facts")
+        .into_iter().map(|mut v| {
+        (v.remove(0), v.remove(0), v.remove(0), v.remove(0), v.remove(0), v.remove(0))  // 直接移除并返回向量的前两个元素
+    });
+    prog._StoreInstanceField.extend(tmp);
     // .input _Method(IO="file", filename="Method.facts", delimiter="\t")
     let tmp = utils::utils::
     read_file_from_zip_to_vec_doop_thin(zip_file_name, "database/Method.facts")
@@ -348,6 +740,23 @@ fn input_process(prog: &mut AscentProgram, zip_file_name: &String) {
     prog._ApplicationClass.extend(tmp);
 }
 
+fn output_process(prog: &mut AscentProgram) {
+    // relation Assign(String, String);
+    println!("[OutPut]: Assign size: {:?}", prog.Assign.len());
+    // relation VarPointsTo(String, String);
+    println!("[OutPut]: VarPointsTo size: {:?}", prog.VarPointsTo.len());
+    // relation InstanceFieldPointsTo(String, String, String);
+    println!("[OutPut]: InstanceFieldPointsTo size: {:?}", prog.InstanceFieldPointsTo.len());
+    // relation StaticFieldPointsTo(String, String);
+    println!("[OutPut]: StaticFieldPointsTo size: {:?}", prog.StaticFieldPointsTo.len());
+    // relation CallGraphEdge(String, String);
+    println!("[OutPut]: CallGraphEdge size: {:?}", prog.CallGraphEdge.len());
+    // relation ArrayIndexPointsTo(String, String);
+    println!("[OutPut]: ArrayIndexPointsTo size: {:?}", prog.ArrayIndexPointsTo.len());
+    // relation Reachable(String);
+    println!("[OutPut]: Reachable size: {:?}", prog.Reachable.len());
+}
+
 fn main() {
     let matches = Command::new("Doop-thin Program")
         .version("1.0")
@@ -367,13 +776,15 @@ fn main() {
     // input & facts area below
     input_process(&mut prog, zip_file_name);
 
+    // println!("[debug]: input process done");
 
     let start = Instant::now();
     prog.run();
     let duration = start.elapsed();
-    println!("方法运行时间: {:?}", duration);
-    println!("{}", prog.Method_Descriptor.len());
-
+    println!("[OutPut]: 方法运行时间: {:?}", duration);
+    // println!("{}", prog.Method_Descriptor.len());
+    output_process(&mut prog);
+    // println!("[NOTE]: 目前还有注释内容需要处理！")
     // let mut count = 0;  // 定义一个计数器
     // for (i, j) in prog.Method_Descriptor {
     //     if count % 1000 == 0 {  // 检查计数器是否是1000的倍数

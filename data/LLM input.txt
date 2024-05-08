@@ -23,6 +23,10 @@ HeapAllocation_Type(?id, ?type) :-
   _NormalHeap(?id, ?type).
 HeapAllocation_Type(?id, "java.lang.String") :-
   _StringConstant(?id).
+Method_Descriptor(?method, ?descriptor) :-
+  Method_ReturnType(?method, ?returnType),
+  Method_Params(?method, ?params),
+  ?descriptor = cat(?returnType, ?params).
 结果：
 isType(_type),
 HeapAllocation_Type(id, _type) <--
@@ -31,26 +35,26 @@ HeapAllocation_Type(id, _type) <--
 HeapAllocation_Type(id, "java.lang.String".parse().unwrap()) <--
   _StringConstant(id);
 // 这里ascent需要.parse().unwrap()来处理String
+Method_Descriptor(method, descriptor) <--
+  Method_ReturnType(method, returnType),
+  Method_Params(method, params),
+  let descriptor = format!("{}{}", returnType, params); // 'cat' is concatenation of strings
 
 你需要处理的：
 【你无需处理input 并且只需要处理规则片段中decl以及规则部分】
-.decl _StoreInstanceField(?instruction:symbol, ?index:number, ?from:symbol, ?base:symbol, ?signature:symbol, ?method:symbol)
-.input _StoreInstanceField(IO="file", filename="StoreInstanceField.facts", delimiter="\t")
-Instruction_Method(?instruction, ?method),
-FieldInstruction_Signature(?instruction, ?signature),
-StoreInstanceField_Base(?instruction, ?base),
-StoreInstanceField_From(?instruction, ?from) :-
-  _StoreInstanceField(?instruction, ?index, ?from, ?base, ?signature, ?method).
-.decl _LoadInstanceField(?instruction:symbol, ?index:number, ?to:symbol, ?base:symbol, ?signature:symbol, ?method:symbol)
-.input _LoadInstanceField(IO="file", filename="LoadInstanceField.facts", delimiter="\t")
-Instruction_Method(?instruction, ?method),
-FieldInstruction_Signature(?instruction, ?signature),
-LoadInstanceField_Base(?instruction, ?base),
-LoadInstanceField_To(?instruction, ?to) :-
-  _LoadInstanceField(?instruction, ?index, ?to, ?base, ?signature, ?method).
-.decl _StoreStaticField(?instruction:symbol, ?index:number, ?from:symbol, ?signature:symbol, ?method:symbol)
-.input _StoreStaticField(IO="file", filename="StoreStaticField.facts", delimiter="\t")
-Instruction_Method(?instruction, ?method),
-FieldInstruction_Signature(?instruction, ?signature),
-StoreStaticField_From(?instruction, ?from) :-
-  _StoreStaticField(?instruction, ?index, ?from, ?signature, ?method).
+Reachable(?tomethod),
+CallGraphEdge(?invocation, ?tomethod) :-
+  Reachable(?inmethod),
+  StaticMethodInvocation(?invocation, ?tomethod, ?inmethod).
+Reachable(?tomethod),
+CallGraphEdge(?invocation, ?tomethod),
+VarPointsTo(?heap, ?this) :-
+  Reachable(?inmethod),
+  Instruction_Method(?invocation, ?inmethod),
+  SpecialMethodInvocation_Base(?invocation, ?base),
+  VarPointsTo(?heap, ?base),
+  MethodInvocation_Method(?invocation, ?tomethod),
+  ThisVar(?tomethod, ?this).
+Reachable(?method) :-
+  MainMethodDeclaration(?method).
+

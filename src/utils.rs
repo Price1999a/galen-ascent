@@ -139,8 +139,8 @@ pub mod utils {
                 }
             }
         }
-        println!("[debug]: filename: {}, len: {}", file_path, results.len());
-        if results.len() > 0 { println!("[debug]: {:?}", results.get(0)); }
+        // println!("[debug]: filename: {}, len: {}", file_path, results.len());
+        // if results.len() > 0 { println!("[debug]: {:?}", results.get(0)); }
         results
     }
 }
