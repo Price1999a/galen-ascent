@@ -112,7 +112,7 @@ ascent_par! {
     isType(_type),
     HeapAllocation_Type(id, _type) <--
       _NormalHeap(id, _type);
-    HeapAllocation_Type(id, "java.lang.String".parse().unwrap()) <--
+    HeapAllocation_Type(id, "java.lang.String".to_string()) <--
       _StringConstant(id);
     relation _AssignHeapAllocation(String, String, String, String, String, String);
     relation _AssignLocal(String, String, String, String, String);
